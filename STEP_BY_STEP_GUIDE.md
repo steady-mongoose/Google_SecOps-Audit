@@ -237,20 +237,16 @@ Go to: **Google SecOps Console** → **Query** → **New Query** → **Native Qu
 
 ```
 metadata.log_type != ""
-
+ $log_type = metadata.log_type
+ $week = timestamp.get_timestamp(metadata.event_timestamp.seconds, "WEEK", "UTC")
 match:
-  metadata.log_type, timestamp.get_timestamp(metadata.event_timestamp.seconds, "WEEK", "UTC")
-
+  $log_type, $week
 outcome:
-  $log_type = metadata.log_type
-  $week = timestamp.get_timestamp(metadata.event_timestamp.seconds, "WEEK", "UTC")
-  $event_count = count_distinct(metadata.id)
-  $week_gigabytes = ($event_count * 1.5) / (1024 * 1024 * 1024)
+  $event_count = count(metadata.id)
+  $week_gigabytes = ($event_count * 1024) / (1024 * 1024 * 1024)
   $week_array = array_distinct($week)
-
 order:
   $log_type asc, $week desc
-
 limit:
   10000
 ```
