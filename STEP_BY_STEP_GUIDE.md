@@ -168,19 +168,23 @@ Go to: **Google SecOps Console** → **Query** → **New Query** → **Native Qu
 
 ```
 metadata.log_type != ""
-metadata.event_timestamp.seconds > 0
+ principal.hostname != ""
+ metadata.event_type != "EVENTTYPE_UNSPECIFIED"
+ metadata.product_event_type != ""
+
+ $host = principal.hostname
+ $log_type = metadata.log_type
+ $event_type = metadata.event_type
+ $product_event_type = metadata.product_event_type
+ $day = timestamp.get_timestamp(metadata.event_timestamp.seconds, "DAY", "UTC")
 
 match:
-  metadata.log_type, metadata.event_type, metadata.product_event_type
-
+  $log_type, $event_type, $product_event_type, $day
 outcome:
-  $event_count = count_distinct(metadata.id)
-  $host_list = array_distinct(metadata.hostname)
-  $day = timestamp.get_timestamp(metadata.event_timestamp.seconds, "DAY", "UTC")
-
+  $event_count = count(metadata.id)
+  $host_list = array_distinct($host)
 order:
-  metadata.log_type asc, metadata.event_type asc, metadata.product_event_type asc
-
+  $event_count desc
 limit:
   10000
 ```
