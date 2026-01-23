@@ -4,14 +4,15 @@
 
 1. [What This Tool Does](#what-this-tool-does)
 2. [File Requirements](#file-requirements)
-3. [Step 1: Download Detection Results CSV](#step-1-download-detection-results-csv)
-4. [Step 2: Download Event Results CSV](#step-2-download-event-results-csv)
-5. [Step 3: Download Log Volume CSV (Optional)](#step-3-download-log-volume-csv-optional)
-6. [Step 4: Verify Your Files](#step-4-verify-your-files)
-7. [Step 5: Run the Python Script](#step-5-run-the-python-script)
-8. [Step 6: Review the HTML Report](#step-6-review-the-html-report)
-9. [Step 7: Download as PDF](#step-7-download-as-pdf)
-10. [Troubleshooting](#troubleshooting)
+3. [Step 1: Download Customer Rules from host where rules are managed](#step-1-download-customer-rules-from-host-where-rules-are-managed)
+4. [Step 2: Download Detection Results CSV](#step-2-download-detection-results-csv)
+5. [Step 3: Download Event Results CSV](#step-3-download-event-results-csv)
+6. [Step 4: Download Log Volume CSV (Optional)](#step-4-download-log-volume-csv-optional)
+7. [Step 5: Verify Your Files](#step-5-verify-your-files)
+8. [Step 6: Run the Python Script](#step-6-run-the-python-script)
+9. [Step 7: Review the HTML Report](#step-7-review-the-html-report)
+10. [Step 8: Download as PDF](#step-8-download-as-pdf)
+11. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -66,8 +67,16 @@ The script requires **3 CSV files** from Google SecOps:
 **Key Point:** Files MUST be named exactly as shown above (case-sensitive on Linux/Mac)
 
 ---
-
 ## Step 1: Download Detection Results CSV
+
+## Purpose
+Download Customer Rules from the TAM instance.
+
+## How to Download from TAM Box
+
+### 1. Log into host with rules instance
+
+## Step 2: Download Detection Results CSV
 
 ### Purpose
 This file contains all your **active detection rules** that are monitoring your environment.
@@ -149,7 +158,7 @@ Open the file in Excel or text editor and verify:
 
 ---
 
-## Step 2: Download Event Results CSV
+## Step 3: Download Event Results CSV
 
 ### Purpose
 This file contains **all events** that occurred in your environment during the analysis period.
@@ -221,7 +230,7 @@ Open the file and verify:
 
 ---
 
-## Step 3: Download Log Volume CSV (Optional)
+## Step 4: Download Log Volume CSV (Optional)
 
 ### Purpose
 This file shows **how much data** each log type generated per week and the **time period** of your analysis.
@@ -288,7 +297,7 @@ Open the file and verify:
 
 ---
 
-## Step 4: Verify Your Files
+## Step 5: Verify Your Files
 
 ### File Location
 
@@ -330,7 +339,7 @@ Downloads/
 
 ---
 
-## Step 5: Run the Python Script
+## Step 6: Run the Python Script
 
 ### On Windows
 
@@ -390,7 +399,7 @@ python3 compare_unmapped_events.py
 
 ---
 
-## Step 6: File Selection Dialogs
+## Step 7: File Selection Dialogs
 
 When you run the script, it will ask for files one at a time.
 
@@ -463,7 +472,7 @@ Loading log volume data...
 
 ---
 
-## Step 7: Script Processing
+## Step 8: Script Processing
 
 ### What the Script Does
 
@@ -525,7 +534,7 @@ Done! The HTML report has been opened in your browser.
 
 ---
 
-## Step 8: Review the HTML Report
+## Step 9: Review the HTML Report
 
 ### Browser Opens Automatically
 
