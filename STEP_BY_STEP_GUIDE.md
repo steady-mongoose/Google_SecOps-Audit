@@ -72,7 +72,7 @@ The script requires **3 CSV files** from Google SecOps:
 ## Purpose
 Download Customer Rules from the TAM instance.
 
-## How to Download from TAM Box
+## How to Download from host where rules are managed
 
 ### 1. Log into host with rules instance
 
