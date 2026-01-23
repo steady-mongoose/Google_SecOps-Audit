@@ -92,28 +92,36 @@ Rule_2   | FORTINET_FIREWALL | NETWORK_CONNECTION | traffic-forward | 2026-01-14
 #### 2. Copy & Paste This Query
 
 ```
-// Query: Granular one-to-one correlations of detection rule names to log types, UDM event types, and product event types with daily data volume estimation in GB/day
-// Groups by rule name, log type, event type, product event type, and day for per-day volume calculation
-// All grouping variables (including date) automatically appear as dedicated columns; metrics include event count and estimated GB/day (using average raw log size assumption)
-detection.detection.rule_name != ""
-$Rulename = detection.detection.rule_name
-$Logtype = detection.collection_elements.references.event.metadata.log_type
-$Eventtype = detection.collection_elements.references.event.metadata.event_type
-$Productevent = detection.collection_elements.references.event.metadata.product_event_type
-$Day = timestamp.get_date(detection.collection_elements.references.event.metadata.event_timestamp.seconds)  // Extracts calendar date (YYYY-MM-DD) from referenced event timestamps
-// Filters to exclude empty or unspecified values for clean, accurate one-to-one mappings
-$Logtype != ""
-$Eventtype != "EVENTTYPE_UNSPECIFIED"
-$Productevent != ""
+// REVISED - Aggregates per RULE, includes array of distinct event_type only
+// Groups by rule_id for uniqueness; collects distinct underlying UDM event types per rule
+// Removed arrays for log_type and product_event per request
+// Assumes ~1.5 KB per detection for GB estimate; adjust based on actual query span
+// Optional: Uncomment time/event filters for performance and relevance
+detection.detection.rule_name != ""  // Full UDM: security_result.detection.rule_name != "" (uncommented for active filtering)
+// Variables for rule details
+// $rule_id = detection.detection.rule_id  // Full UDM: security_result.detection.rule_id
+$rule_name = detection.detection.rule_name  // Full UDM: security_result.detection.rule_name
+$rule_description = detection.detection.description  // Full UDM: security_result.detection.description
+$rule_state = detection.detection.alert_state  // Full UDM: security_result.detection.alert_state
+$rule_severity = detection.detection.severity  // Full UDM: security_result.detection.severity
+$rule_type = detection.detection.rule_type  // Full UDM: security_result.detection.type
+// Variable for underlying event metadata (retained for event_type array)
+$log_type = detection.collection_elements.references.event.metadata.log_type
+$event_type = detection.collection_elements.references.event.metadata.event_type
+$product_event = detection.collection_elements.references.event.metadata.product_event_type
+not $rule_name = /(STAGE_|DEV_|_PR_)/  // For case-insensitivity in 2.0: re.regex($rule_name, "(?i)stage_|dev_|_pr_")
+// Match only on rule_id to aggregate all detections per rule (recommended for unique groups)
+// Alternative: match: $rule_name  (if you prefer grouping by name)
 match:
-  $Rulename, $Logtype, $Eventtype, $Productevent, $Day
+  $rule_name, $rule_description, $rule_severity, $rule_state, $rule_type, $log_type, $product_event
 outcome:
-  $event_count = count(detection.collection_elements.references.event.metadata.id)  // Number of underlying UDM events for this exact mapping on this day
-  $trigger_count = count_distinct(detection.id)  // Number of distinct detection alerts for this exact mapping on this day
-  $estimated_gb_per_day = math.round($event_count * 1.5 / 1024, 2)  // Estimated GB/day assuming average raw log size of ~1.5 KB per event (adjust multiplier based on your environment's typical log size in KB)
+  $event_type_arr = array_distinct($event_type)  // Retained: distinct UDM event types per rule
+  
 order:
-  $estimated_gb_per_day desc  // Prioritizes mappings with the highest estimated daily data volume
-limit: 10000
+  $rule_state desc
+limit:
+  1000
+
 ```
 
 #### 3. Export as CSV
