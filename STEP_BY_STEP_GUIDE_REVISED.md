@@ -316,13 +316,12 @@ metadata.log_type != ""
  $log_type = metadata.log_type
  $event_type = metadata.event_type
  $product_event_type = metadata.product_event_type
- $day = timestamp.get_timestamp(metadata.event_timestamp.seconds, "DAY", "UTC")
-
+$day = timestamp.get_date(metadata.event_timestamp.seconds, "UTC")
 match:
   $log_type, $event_type, $product_event_type, $day
 outcome:
   $event_count = count(metadata.id)
-  $host_list = array_distinct($host)
+//  $host_list = array_distinct($host)
 order:
   $event_count desc
 limit:
