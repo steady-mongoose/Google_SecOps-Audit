@@ -214,28 +214,36 @@ Shows:
 4. **Copy and paste this query:**
 
 ```
-detection.detection.rule_name != ""
-$rule_name = detection.detection.rule_name
-$rule_description = detection.detection.description
-$rule_severity = detection.detection.severity
-$rule_state = detection.detection.alert_state
-$rule_type = detection.detection.rule_type
 
-not $rule_name = /(STAGE_|DEV_|_PR_)/
-
+// REVISED - Aggregates per RULE, includes array of distinct event_type only
+// Groups by rule_id for uniqueness; collects distinct underlying UDM event types per rule
+// Removed arrays for log_type and product_event per request
+// Assumes ~1.5 KB per detection for GB estimate; adjust based on actual query span
+// Optional: Uncomment time/event filters for performance and relevance
+detection.detection.rule_name != ""  // Full UDM: security_result.detection.rule_name != "" (uncommented for active filtering)
+// Variables for rule details
+// $rule_id = detection.detection.rule_id  // Full UDM: security_result.detection.rule_id
+$rule_name = detection.detection.rule_name  // Full UDM: security_result.detection.rule_name
+$rule_description = detection.detection.description  // Full UDM: security_result.detection.description
+$rule_state = detection.detection.alert_state  // Full UDM: security_result.detection.alert_state
+$rule_severity = detection.detection.severity  // Full UDM: security_result.detection.severity
+$rule_type = detection.detection.rule_type  // Full UDM: security_result.detection.type
+// Variable for underlying event metadata (retained for event_type array)
+$log_type = detection.collection_elements.references.event.metadata.log_type
+$event_type = detection.collection_elements.references.event.metadata.event_type
+$product_event = detection.collection_elements.references.event.metadata.product_event_type
+not $rule_name = /(STAGE_|DEV_|_PR_)/  // For case-insensitivity in 2.0: re.regex($rule_name, "(?i)stage_|dev_|_pr_")
+// Match only on rule_id to aggregate all detections per rule (recommended for unique groups)
+// Alternative: match: $rule_name  (if you prefer grouping by name)
 match:
-  $rule_name
-
+  $rule_name, $rule_description, $rule_severity, $rule_state, $rule_type, $log_type, $product_event
 outcome:
-  $count = count_distinct(detection.id)
-  $severity = array_distinct($rule_severity)
-  $type = array_distinct($rule_type)
-
+  $event_type_arr = array_distinct($event_type)  // Retained: distinct UDM event types per rule
 order:
-  $count desc
-
+  $rule_state desc
 limit:
   1000
+  
 ```
 
 5. **Click Run button**
@@ -298,23 +306,28 @@ Shows:
 3. **Copy and paste this query:**
 
 ```
-detection.collection_elements.references.event.metadata.log_type != ""
 
-$log_type = detection.collection_elements.references.event.metadata.log_type
-$event_type = detection.collection_elements.references.event.metadata.event_type
-$product_event = detection.collection_elements.references.event.metadata.product_event_type
+metadata.log_type != ""
+ principal.hostname != ""
+ metadata.event_type != "EVENTTYPE_UNSPECIFIED"
+ metadata.product_event_type != ""
+
+ $host = principal.hostname
+ $log_type = metadata.log_type
+ $event_type = metadata.event_type
+ $product_event_type = metadata.product_event_type
+ $day = timestamp.get_timestamp(metadata.event_timestamp.seconds, "DAY", "UTC")
 
 match:
-  $log_type, $event_type, $product_event
-
+  $log_type, $event_type, $product_event_type, $day
 outcome:
-  $count = count_distinct(detection.id)
-
+  $event_count = count(metadata.id)
+  $host_list = array_distinct($host)
 order:
-  $log_type asc, $event_type asc
-
+  $event_count desc
 limit:
   10000
+
 ```
 
 4. **Click Run button**
@@ -380,22 +393,23 @@ Shows:
 3. **Copy and paste this query:**
 
 ```
-detection.collection_elements.references.event.metadata.log_type != ""
-
-$log_type = detection.collection_elements.references.event.metadata.log_type
-
+/*Each week date represents the start of that ISO week (Monday). So 2026-01-11 contains all events from Jan 11-17, 2026.
+The $week_array = array_distinct($week) line would just show the unique week per row (since you're already grouping by week).
+*/
+metadata.log_type != ""
+ $log_type = metadata.log_type
+ $week = timestamp.get_timestamp(metadata.event_timestamp.seconds, "WEEK", "UTC")
 match:
-  $log_type
-
+  $log_type, $week
 outcome:
-  $event_count = count_distinct(detection.id)
-  $volume_estimate = math.round($event_count * 1.5 / 1024, 2)
-
+  $event_count = count(metadata.id)
+  $week_gigabytes = ($event_count * 1024) / (1024 * 1024 * 1024)
+  $week_array = array_distinct($week)
 order:
-  $event_count desc
-
+  $log_type asc, $week desc
 limit:
-  100
+  10000
+
 ```
 
 4. **Click Run button**
