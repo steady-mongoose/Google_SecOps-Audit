@@ -527,7 +527,7 @@ log_volume.csv:
 ### Script Location
 
 ```
-customer_audit_v4.py
+customer_audit_v10.py
 ```
 
 This is the ACTUAL script name (not `compare_unmapped_events.py`).
@@ -537,12 +537,12 @@ This is the ACTUAL script name (not `compare_unmapped_events.py`).
 **Option 1: Command Prompt**
 ```bash
 cd Downloads
-python customer_audit_v4.py
+python customer_audit_v10.py
 ```
 
 **Option 2: Double-click**
 1. Open Downloads folder
-2. Find `customer_audit_v4.py`
+2. Find `customer_audit_v10.py`
 3. Double-click to run
 
 ### Running on macOS/Linux
@@ -550,13 +550,13 @@ python customer_audit_v4.py
 **Terminal:**
 ```bash
 cd ~/Downloads
-python3 customer_audit_v4.py
+python3 customer_audit_v10.py
 ```
 
 **Or make executable:**
 ```bash
-chmod +x customer_audit_v4.py
-./customer_audit_v4.py
+chmod +x customer_audit_v10.py
+./customer_audit_v10.py
 ```
 
 ### What Happens
