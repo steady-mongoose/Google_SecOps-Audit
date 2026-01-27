@@ -73,7 +73,7 @@ Examples from guides:
 
 #### What the Actual Script Is:
 
-`customer_audit_v4.py`
+`customer_audit_v10.py`
 
 #### Impact:
 
